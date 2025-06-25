@@ -1,7 +1,12 @@
 import React from "react";
 import { Box, Button, Card } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+  const handleSquat = () => {
+    navigate("/posture");
+  };
   return (
     <Box
       sx={{
@@ -32,7 +37,9 @@ const Dashboard = () => {
             gap: "10px",
           }}
         >
-          <Button variant="contained">Squat</Button>
+          <Button variant="contained" onClick={handleSquat}>
+            Squat
+          </Button>
           <Button variant="contained">Jump</Button>
           <Button variant="contained">Plank</Button>
         </Box>

@@ -2,37 +2,54 @@ import React, { useEffect, useState, useRef } from "react";
 import { Camera } from "@mediapipe/camera_utils";
 import { Pose } from "@mediapipe/pose";
 import Webcam from "react-webcam";
+import { Box, Button } from "@mui/material";
+import Rest from "./Rest";
 
 const JumpDetector = () => {
   const webcamRef = useRef(null);
   const [status, setStatus] = useState("🧍 Waiting...");
   const [counter, setCounter] = useState(0);
-  const [showRest, setShowRest] = useState(false);
   const [setCounters, setSetCounters] = useState(1);
-
+  const [showRest, setShowRest] = useState(false);
   const [lastY, setLastY] = useState(null);
+  const [jumping, setJumping] = useState(false); // Prevent multiple counts per jump
+
+  const JUMP_THRESHOLD = 0.08; // sensitivity
 
   const handleRestFinish = () => {
     setShowRest(false);
-    setCounter(0); // Reset or continue counting after rest
-    setSetCounters((prev) => prev + 1); // Increment the set counter
+    setCounter(0);
+    setSetCounters((prev) => prev + 1);
   };
 
   const detectJump = (landmarks) => {
     const leftAnkle = landmarks[27];
     const rightAnkle = landmarks[28];
 
-    // Basic check: both ankles are detected
     if (leftAnkle && rightAnkle) {
       const currentY = (leftAnkle.y + rightAnkle.y) / 2;
 
       if (lastY !== null) {
-        const jumpThreshold = 0.08;
         const velocity = lastY - currentY;
 
-        if (velocity > jumpThreshold) {
+        if (velocity > JUMP_THRESHOLD && !jumping) {
+          setJumping(true);
           setStatus("🦘 Jump Detected!");
-          return;
+
+          if (counter < 10) {
+            const newCount = counter + 1;
+            setCounter(newCount);
+
+            if (newCount === 10 && setSetCounters < 3) {
+              setStatus("🎉 Set Complete! Take a Rest");
+              setShowRest(true);
+            }
+          }
+        }
+
+        // When the person lands
+        if (velocity < 0 && jumping) {
+          setJumping(false);
         }
       }
 
@@ -60,10 +77,7 @@ const JumpDetector = () => {
       }
     });
 
-    if (
-      typeof webcamRef.current !== "undefined" &&
-      webcamRef.current !== null
-    ) {
+    if (webcamRef.current && webcamRef.current.video) {
       const camera = new Camera(webcamRef.current.video, {
         onFrame: async () => {
           await pose.send({ image: webcamRef.current.video });
@@ -86,19 +100,17 @@ const JumpDetector = () => {
           height: "10vh",
           backgroundColor: "#f0f0f0",
           width: "100vw",
-          boxSizing: "border-box",
           position: "fixed",
           top: 0,
           zIndex: 1000,
         }}
       >
-        <h1>Check Posture</h1>
+        <h1>Jump Tracker</h1>
         <Button variant="contained" onClick={() => setShowRest(true)}>
           Rest
         </Button>
-        <p sx={{ color: "#008000" }}>
-          {" "}
-          Set: {setCounters} | Reps: {counter}/10
+        <p style={{ color: "#008000", margin: "0 20px" }}>
+          Set: {setCounters} | Jumps: {counter}/10
         </p>
         <p>{status}</p>
       </Box>

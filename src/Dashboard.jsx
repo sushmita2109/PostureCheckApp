@@ -10,6 +10,9 @@ const Dashboard = () => {
   const handleJump = () => {
     navigate("/jump");
   };
+  const handlePlank = () => {
+    navigate("/plank");
+  };
   return (
     <Box
       sx={{
@@ -46,7 +49,9 @@ const Dashboard = () => {
           <Button variant="contained" onClick={handleJump}>
             Jump
           </Button>
-          <Button variant="contained">Plank</Button>
+          <Button variant="contained" onClick={handlePlank}>
+            Plank
+          </Button>
         </Box>
       </Card>
     </Box>

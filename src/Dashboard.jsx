@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 const Dashboard = () => {
   const navigate = useNavigate();
   const handleSquat = () => {
-    navigate("/posture");
+    navigate("/squat");
   };
   return (
     <Box

@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import React, { useEffect, useRef, useState } from "react";
 import Webcam from "react-webcam";
 import { Pose } from "@mediapipe/pose";
@@ -10,6 +10,13 @@ const CheckPosture = () => {
   const [status, setStatus] = useState("Loading Pose Model...");
   const [counter, setCounter] = useState(0);
   const [showRest, setShowRest] = useState(false);
+  const [setCounters, setSetCounters] = useState(1);
+
+  const handleRestFinish = () => {
+    setShowRest(false);
+    setCounter(0); // Reset or continue counting after rest
+    setSetCounters((prev) => prev + 1); // Increment the set counter
+  };
 
   useEffect(() => {
     const videoElement = webcamRef.current?.video;
@@ -37,9 +44,13 @@ const CheckPosture = () => {
       const isSquatGood = evaluateSquat(results.poseLandmarks);
       if (isSquatGood) {
         setStatus("✅ Good Squat!");
-        setCounter((prev) => prev + 1);
-        if (counter === 10) {
-          setShowRest(true);
+        if (counter < 10) {
+          const newCount = counter + 1;
+          setCounter(newCount);
+          if (newCount === 10 && setSetCounters < 3) {
+            setStatus("🎉 Set Complete! Take a Rest");
+            setShowRest(true);
+          }
         }
       } else {
         setStatus("⚠️ Adjust Your Posture");
@@ -75,7 +86,7 @@ const CheckPosture = () => {
       <Box
         sx={{
           display: "flex",
-          flexDirection: "column",
+          flexDirection: "row",
           alignItems: "center",
           justifyContent: "center",
           height: "10vh",
@@ -88,11 +99,18 @@ const CheckPosture = () => {
         }}
       >
         <h1>Check Posture</h1>
+        <Button variant="contained" onClick={() => setShowRest(true)}>
+          Rest
+        </Button>
+        <p sx={{ color: "#008000" }}>
+          {" "}
+          Set: {setCounters} | Reps: {counter}/10
+        </p>
         <p>{status}</p>
       </Box>
       <Box sx={{ mt: "12vh", display: "flex", justifyContent: "center" }}>
         {showRest ? (
-          <Rest />
+          <Rest onFinish={handleRestFinish} />
         ) : (
           <Webcam
             ref={webcamRef}

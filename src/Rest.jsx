@@ -1,17 +1,22 @@
 import { Box } from "@mui/material";
 import React, { useState, useEffect } from "react";
 
-const Rest = () => {
+const Rest = ({ onFinish }) => {
   const [restCounter, setRestCounter] = useState(30);
   useEffect(() => {
-    if (restCounter === 0) return;
-
     const timer = setInterval(() => {
-      setRestCounter((prev) => prev - 1);
+      setRestCounter((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          onFinish(); // Call parent callback to go back
+          return 0;
+        }
+        return prev - 1;
+      });
     }, 1000);
 
-    return () => clearInterval(timer); // Clean up on unmount
-  }, [restCounter]);
+    return () => clearInterval(timer);
+  }, [onFinish]);
 
   return (
     <Box
@@ -25,7 +30,7 @@ const Rest = () => {
         backdropFilter: "blur(4px)",
       }}
     >
-      <h1>{restCounter > 0 ? restCounter : "Let's Go!"}</h1>
+      <h1>Rest Time: {restCounter}s</h1>
     </Box>
   );
 };
